@@ -1,0 +1,75 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+
+}
+
+#form_div {
+  border-radius: 10px;  
+  border: 1px solid #B2B2B2;
+  margin: 1.5em 0;
+  padding: 0.5em 1em ;
+}
+
+
+.post_grid {
+  display: grid; 
+  grid-template-columns: 100px 200px;
+  grid-auto-rows: auto;
+  margin:10px 0;
+  gap: 5px 5px;
+  grid-template:   
+  "profile  user timestamp "
+  "profile body  body"
+  "profile likes  likes";
+}
+
+.profile {
+  grid-area: profile;    
+  background-color:blue;  
+  padding: 10px;  
+  color: aliceblue;
+  justify-items: center;
+}
+
+.user{
+  grid-area: user;   
+  color: blue;
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+
+  
+}
+
+.timestamp {
+  grid-area: timestamp;   
+  padding: 10px;
+      
+}
+
+
+.content {
+  grid-area: body; 
+  background-color:yellow;
+  padding: 10px;
+      
+}
+
+.likes {
+  grid-area: likes; 
+  background-color: red;
+  font-size: 20px;
+  height: 20px;
+}
+
+
+
+#allposts,
+#profile,
+#following {
+  display: none;
+}

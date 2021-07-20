@@ -1,0 +1,59 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %} 
+    {% if user.is_authenticated %}
+        <div class="container">
+           
+            <div id="form_div">
+                <form id="write_post" action="{% url 'compose_post' %}" method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input id="submit" type="submit" class="btn btn-primary my-3" value="Post"/>
+                </form>
+            </div>
+               
+           
+
+
+            <div id="allposts">  </div>
+            
+            <div id="profile">  </div>
+
+            <div id="following"> Following </div>
+
+            
+            
+
+        </div>
+
+   
+    {% else %}
+        <div class="container">
+           
+            <div id="allposts">  </div>
+            
+            <div id="profile">  </div>
+
+            <div id="following"> Following </div>
+
+        </div>
+
+
+    {% endif %}
+
+
+    {% block script %}
+        <script src="{% static 'network/main.js' %}"></script>
+
+        <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+        
+    {% endblock %}
+
+
+
+    
+{% endblock %}
+
