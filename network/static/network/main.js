@@ -1,24 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+
+  
   document.querySelector('#allposts').style.display = 'block';
   //document.querySelector('form').style.display = 'block';
 
+  btn = document.createElement("button");
+  btn.id = "btn_follow";
+  btn.innerHTML = "Follow";
+  btn.style.display = "none";
+  document.querySelector("#profile").appendChild(btn);
   
   document.querySelectorAll('a').forEach(a => {
     a.onclick = function() {
       
       showSection(this.dataset.section);
       
+      /*
       const section = this.dataset.section;
       history.pushState({section: section}, "", `${section}`);
-      
+      */
     };    
   });
 
   
+  
   const index = "allposts"
   
-  history.replaceState({section: index}, "", `/allposts`);
+  //history.replaceState({section: index}, "", `/allposts`);
       
   window.onpopstate = function(event) {
         console.log(event.state.section);
@@ -85,8 +94,8 @@ function load_posts(section) {
       picture.id = "picture";
       picture.setAttribute('class', 'profile');
    
-      //user.id = `${posts.user}`;
-      user.id = "user";
+      user.id = `${posts.poster}`;
+      //user.id = "user";
       user.setAttribute('class', 'user');
       user.setAttribute('data-section', 'profile');
       user.textContent = `${posts.poster}`;
@@ -113,9 +122,11 @@ function load_posts(section) {
         
         document.querySelector(".container").firstChild.innerHTML = "Profile";
 
+        /*
         const profile = "profile"
         history.replaceState({section: profile}, "", `/${posts.poster}`);
-        
+        */
+      
         document.querySelector("#form_div").style.display = "none";
         document.querySelector("#allposts").style.display = "none";
         document.querySelector("#profile").style.display = "block";  
@@ -147,32 +158,60 @@ function load_profile(id) {
   
   fetch(`/getuser/${id}`)
   .then(res => res.json())
-  .then(profile => {
+  .then(data => {
 
      
-    const a = console.log(profile)    
+    //const a = console.log(profile)    
 
-    const b = profile.splice(0, 1)
+    // Takes the user profile you clicked on out of the array
+    const visitedProfile = data.splice(0, 1)
+    console.log(visitedProfile);
+    
+    const requestUser = data.pop();
+    console.log(requestUser);
 
-    const c = console.log(b)
-
-    const user = document.createElement('div');
-          //user.id = `${posts.user}`;
-          user.id = "user";
+    // The current logged user
+    
+    
+    
+    
+    const currentuser = document.createElement('div');
+          //currentuser.id = `${currentProfile[0].username}`;
+          //user.id = "user";
           //user.setAttribute('class', 'user');
-          user.innerHTML = `<a>${b[0].username}</a>`;
-          document.querySelector("#profile").appendChild(user);
+          currentuser.innerHTML = `<a>${visitedProfile[0].username}</a>`;
+          document.querySelector("#profile").appendChild(currentuser);
 
-          const x = document.createElement('div');
-          x.id = "likes";
+        const following = document.createElement('div');
+          following.id = "following";
+          following.style.display = "block";
+          following.innerHTML  =  `<i></i> ${visitedProfile[0].following}`;
+          document.querySelector("#profile").appendChild(following);
+
+          const followers = document.createElement('div');
+          followers.id = "followers";
           //x.className = "bi bi-star fs-4 ";
           //likes.setAttribute("class", "likes");
-          x.style.display = "block";
-          x.innerHTML  =  `<i></i> ${b[0].following}`;
-          document.querySelector("#profile").appendChild(x);
+          followers.style.display = "block";
+          followers.innerHTML  =  `<i></i> ${visitedProfile[0].followers}`;
+          document.querySelector("#profile").appendChild(followers);
 
-          
-    profile.forEach(showposts);
+    if (requestUser.username !== visitedProfile[0].username) {
+      //btn = document.createElement("button");
+      //btn.id = "btn_follow";
+      btn.style.display = "block"
+      //document.querySelector("#profile").appendChild(btn);
+    } else {
+      btn.style.display = "none";
+      //document.querySelector("#btn_follow").innerHTML = "Unfollow";
+    
+    }
+
+
+    
+   
+    // Below display all clicked users posts    
+    data.forEach(showposts);
     //profile.map(showposts);
 
     function showposts(profile) {
@@ -189,8 +228,8 @@ function load_profile(id) {
             post_grid.appendChild(picture);
       
       const user = document.createElement('div');
-            //user.id = `${posts.user}`;
-            user.id = "user";
+            user.id = `${profile.poster}`;
+            //user.id = "user";
             user.setAttribute('class', 'user');
             user.setAttribute('data-section', 'profile');
 
@@ -219,9 +258,25 @@ function load_profile(id) {
             //likes.setAttribute("class", "likes");
             likes.innerHTML  =  `<i></i> ${profile.likes}`;
             post_grid.appendChild(likes);
+
+      /*
+      const currentUser = document.getElementsByTagName("strong").innerHTML;
+      console.log(currentUser);
+      // Show or not show the follow-button:
+      if (currentProfile[0].username !== currentUser) {
+        const follow_btn = document.createElement('button');
+        follow_btn.id = "btn";
+        follow_btn.style.display = "block";
+        document.querySelector("#profile").appendChild(follow_btn);
+      }
+      */
     }
+     
     
+
   })
-          
+  
+ 
+  
 }
 

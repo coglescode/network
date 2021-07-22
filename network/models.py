@@ -8,7 +8,8 @@ class User(AbstractUser):
     
     pass
 
-User
+
+
 
 class Profile(models.Model):
     username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
@@ -32,6 +33,7 @@ class Profile(models.Model):
     def __str__(self):
         return f'Profile for user {self.username}'
     
+
 
 
 class Post(models.Model):
@@ -80,11 +82,11 @@ class Like(models.Model):
         return f'Liked by {self.user}'
 
 
-        class Follows(models.Model):
-    user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="following")
+class Follows(models.Model):
+    user = models.ForeignKey("Profile", on_delete=models.CASCADE, related_name="following")
     following = models.PositiveIntegerField(default=0)
     followers = models.PositiveIntegerField(default=0)
-    follows = models.BooleanField(default=True)
+    is_following = models.BooleanField(default=True)
 
     def serialize(self):
         return {

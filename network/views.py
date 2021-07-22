@@ -45,9 +45,7 @@ def compose_post(request):
     else:
         post_form: PostForm() 
     #return HttpResponseRedirect(reverse ('index'))
-    return render(request, "network/index.html", {
-        "form": PostForm()
-    })
+    return render(request, "network/index.html",)
 
 
    
@@ -63,7 +61,7 @@ def get_posts(request, section):
     if section == "allposts":
         posts = Post.objects.filter(active=True)
         return JsonResponse([post.serialize() for post in posts], safe=False)
-
+   
     else:
         #posts = posts.order_by("-created").all()
         return JsonResponse({"error":"No post yet"}, status=404)
@@ -78,8 +76,8 @@ def getuser(request, id):
         post_id = get_object_or_404(Post, id=id)
         posts = Post.objects.filter(poster=post_id.poster, active=True).all()   
         user = Profile.objects.filter(username=post_id.poster, exist=True)
-
-        x = [*user, *posts]
+        currentUser = Profile.objects.filter(username=request.user) 
+        x = [*user, *posts, *currentUser ]
         
     except Profile.DoesNotExist:
         return JsonResponse({"error": "User not found."}, status=404)
@@ -107,6 +105,8 @@ def login_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
+
+
 
         # Check if authentication successful
         if user is not None:
