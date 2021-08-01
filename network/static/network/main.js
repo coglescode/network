@@ -196,21 +196,15 @@ function load_profile(id) {
           followers.innerHTML  =  `<i></i> ${visitedProfile[0].followers}`;
           document.querySelector("#profile").appendChild(followers);
 
+    // Checks if the request user and the visited profile user are the same to display or not the follow button    
     if (requestUser.username !== visitedProfile[0].username) {
-      //btn = document.createElement("button");
-      //btn.id = "btn_follow";
       btn.style.display = "block"
-      //document.querySelector("#profile").appendChild(btn);
     } else {
-      btn.style.display = "none";
-      //document.querySelector("#btn_follow").innerHTML = "Unfollow";
-    
+      btn.style.display = "none";     
     }
 
-
-    
    
-    // Below display all clicked users posts    
+    // Below display the visited profile users posts    
     data.forEach(showposts);
     //profile.map(showposts);
 
@@ -236,8 +230,6 @@ function load_profile(id) {
             user.innerHTML = `<a>${profile.poster}</a>`;
             post_grid.appendChild(user);
       
-            
-
       const time = document.createElement('div');
             time.id = "timestamp";
             time.setAttribute('class', 'timestamp');
@@ -259,20 +251,8 @@ function load_profile(id) {
             likes.innerHTML  =  `<i></i> ${profile.likes}`;
             post_grid.appendChild(likes);
 
-      /*
-      const currentUser = document.getElementsByTagName("strong").innerHTML;
-      console.log(currentUser);
-      // Show or not show the follow-button:
-      if (currentProfile[0].username !== currentUser) {
-        const follow_btn = document.createElement('button');
-        follow_btn.id = "btn";
-        follow_btn.style.display = "block";
-        document.querySelector("#profile").appendChild(follow_btn);
-      }
-      */
     }
-     
-    
+ 
 
   })
   
