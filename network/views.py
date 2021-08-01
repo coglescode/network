@@ -66,29 +66,37 @@ def get_posts(request, section):
         #posts = posts.order_by("-created").all()
         return JsonResponse({"error":"No post yet"}, status=404)
   
-
+ 
 
 @login_required
 def getuser(request, id):       
 
-    # Query for requested email
+    # Query for requested user profile and its posts
     try:      
         post_id = get_object_or_404(Post, id=id)
-        posts = Post.objects.filter(poster=post_id.poster, active=True).all()   
+        posts = Post.objects.filter(poster=post_id.poster, active=True).all() 
         user = Profile.objects.filter(username=post_id.poster, exist=True)
         currentUser = Profile.objects.filter(username=request.user) 
-        x = [*user, *posts, *currentUser ]
+        userdata = [*user, *posts, *currentUser ]
         
     except Profile.DoesNotExist:
         return JsonResponse({"error": "User not found."}, status=404)
 
-    # Return email contents
+    # Return requested user profile and its posts
     if request.method == "GET":
-        return JsonResponse([user.serialize() for user in x], safe=False)
+        return JsonResponse([user.serialize() for user in userdata], safe=False)
     
+def followuser(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "User not found."}, status=404)
 
+    data = json.loads(request.body)
+    
+    user = data.get("username", "")
+    profile = Profile.objects.filter(username=user)
+    profile.save()
 
-
+        
 
 
 

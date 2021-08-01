@@ -15,6 +15,7 @@ class Profile(models.Model):
     username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
     following = models.PositiveIntegerField(default=0)
     followers = models.PositiveIntegerField(default=0)
+    user_folllows = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="followers", blank=True)
     exist = models.BooleanField(default=True)
     
 

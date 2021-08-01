@@ -19,15 +19,12 @@
             <div id="allposts">  </div>
             
             <div id="profile"> 
-                {% if request.user == request.session %}                
-                    <div>Nothing here</div>
+                <form id="follow_form">
+                    <input type="hidden">
 
-                {% else %}
-
-                    <div>Welcome</div>
-                
-                {% endif %}
-             </div>
+                </form>
+           
+            </div>
 
             <div id="following"> Following </div>
 
