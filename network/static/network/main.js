@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-
+     
 
   
   document.querySelector('#allposts').style.display = 'block';
@@ -8,8 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
   btn = document.createElement("button");
   btn.id = "btn_follow";
   btn.innerHTML = "Follow";
+  //btn.setAttribute("type", "submit");
   btn.style.display = "none";
-  document.querySelector("#profile").appendChild(btn);
+  document.querySelector("#follow_form").appendChild(btn);
   
   document.querySelectorAll('a').forEach(a => {
     a.onclick = function() {
@@ -161,8 +162,6 @@ function load_profile(id) {
   .then(data => {
 
      
-    //const a = console.log(profile)    
-
     // Takes the user profile you clicked on out of the array
     const visitedProfile = data.splice(0, 1)
     console.log(visitedProfile);
@@ -171,10 +170,6 @@ function load_profile(id) {
     console.log(requestUser);
 
     // The current logged user
-    
-    
-    
-    
     const currentuser = document.createElement('div');
           //currentuser.id = `${currentProfile[0].username}`;
           //user.id = "user";
@@ -226,10 +221,10 @@ function load_profile(id) {
             //user.id = "user";
             user.setAttribute('class', 'user');
             user.setAttribute('data-section', 'profile');
-
             user.innerHTML = `<a>${profile.poster}</a>`;
             post_grid.appendChild(user);
       
+            
       const time = document.createElement('div');
             time.id = "timestamp";
             time.setAttribute('class', 'timestamp');
@@ -252,7 +247,10 @@ function load_profile(id) {
             post_grid.appendChild(likes);
 
     }
- 
+     
+    document.querySelector("#btn_follow").addEventListener('click', () => {
+      followuser(visitedProfile[0].username);
+    });
 
   })
   
@@ -260,3 +258,28 @@ function load_profile(id) {
   
 }
 
+
+function followuser(username) { 
+
+   
+  fetch(`/followuser/${username}`, {
+
+    method:"POST",
+    body: JSON.stringify({
+      username: username,
+    })
+  
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Success:", data);
+ 
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+  
+
+
+
+}

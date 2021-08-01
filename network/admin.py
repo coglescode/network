@@ -9,8 +9,7 @@ admin.site.register(User, UserAdmin)
 
 @admin.register(Profile) 
 class ProfileAdmin(admin.ModelAdmin):
-  list_display = ('id',  'username',  'exist')
-
+  list_display = ('id',  'username', 'following', 'followers', 'exist')
 
 
 @admin.register(Post) 
