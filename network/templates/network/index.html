@@ -11,7 +11,7 @@
                     {{ form.as_p }}
                     <input id="submit" type="submit" class="btn btn-primary my-3" value="Post"/>
                 </form>
-            </div>
+            </div> 
                
            
 
@@ -19,9 +19,11 @@
             <div id="allposts">  </div>
             
             <div id="profile"> 
-                <form id="follow_form">
-                    <input type="hidden">
-
+                <form id="follow_form" action="{%url 'followuser' %}" method="POST">
+                    {% csrf_token %}
+                    <input id="user_followed" type="hidden" name="followed" readonly>
+                    <input type="hidden" name="follower" value="{{user.username}}" readonly>
+                    <input id="btn_follow" type="submit" name="action" value="Follow">
                 </form>
            
             </div>

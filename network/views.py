@@ -5,17 +5,21 @@ from django.forms import fields
 from django.http import HttpResponse, HttpResponseRedirect, request
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse 
+from django.urls import reverse
+from django.utils import tree 
 
-from .models import Profile, User, Post
+from .models import Profile, User, Post, Follow
+
 
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+#from common.decorators import ajax_required
 
 
-class PostForm(forms.ModelForm):
+class PostForm(forms.ModelForm): 
     class Meta:
         model = Post
         fields = ('body',)
@@ -39,13 +43,20 @@ def compose_post(request):
         post_form = PostForm(request.POST)  
         if post_form.is_valid():
             new_post = post_form.save(commit=False)
+            
             new_post.poster = request.user          
             new_post.save()       
-        
+       
+            if new_post.poster.is_authenticated:
+                obj, created = Profile.objects.get_or_create(
+                    username=request.user,                    
+                    defaults={'exist':True}
+                    )  
+                  
     else:
         post_form: PostForm() 
-    #return HttpResponseRedirect(reverse ('index'))
-    return render(request, "network/index.html",)
+    return HttpResponseRedirect(reverse ('index'))
+    #return render(request, "network/index.html",)
 
 
    
@@ -85,19 +96,42 @@ def getuser(request, id):
     # Return requested user profile and its posts
     if request.method == "GET":
         return JsonResponse([user.serialize() for user in userdata], safe=False)
-    
+
+#@ajax_required
+#@csrf_exempt
+#require_POST
 def followuser(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "User not found."}, status=404)
 
-    data = json.loads(request.body)
-    
-    user = data.get("username", "")
-    profile = Profile.objects.filter(username=user)
-    profile.save()
-
+    if request.method == "POST":
+        #return JsonResponse({"error": "User not found."}, status=404)
         
+        action = request.POST["action"]
+        user_followed = request.POST["followed"]
+        #user_follower = request.POST["follower"]
+        
+        
+        
+        if user_followed:            
 
+                #followed = Profile.objects.get(username=user_followed)
+
+                followed = User.objects.get(username=user_followed)
+                if action:
+                    
+                    #followed.user_follows.create(request.user)
+                    
+                    
+                    p = Follow.objects.create(user_from=request.user, user_to=followed)
+                    p.save()
+                
+                    return JsonResponse({"status":"ok"})
+        
+            #return JsonResponse({"status": "error"})
+
+    return JsonResponse({"status": "error"})
+
+    
+    
 
 
 def index(request):

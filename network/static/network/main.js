@@ -5,12 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#allposts').style.display = 'block';
   //document.querySelector('form').style.display = 'block';
 
-  btn = document.createElement("button");
-  btn.id = "btn_follow";
-  btn.innerHTML = "Follow";
-  //btn.setAttribute("type", "submit");
-  btn.style.display = "none";
-  document.querySelector("#follow_form").appendChild(btn);
   
   document.querySelectorAll('a').forEach(a => {
     a.onclick = function() {
@@ -20,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
       /*
       const section = this.dataset.section;
       history.pushState({section: section}, "", `${section}`);
-      */
+      */ 
     };    
   });
 
@@ -169,18 +163,18 @@ function load_profile(id) {
     const requestUser = data.pop();
     console.log(requestUser);
 
-    // The current logged user
+    // Show the visited user following and follower count
     const currentuser = document.createElement('div');
-          //currentuser.id = `${currentProfile[0].username}`;
-          //user.id = "user";
+          //currentuser.id = `${visitedProfile[0].username}`;
+          currentuser.id = "uservisited";
           //user.setAttribute('class', 'user');
-          currentuser.innerHTML = `<a>${visitedProfile[0].username}</a>`;
+          currentuser.innerHTML = `${visitedProfile[0].username}`;
           document.querySelector("#profile").appendChild(currentuser);
 
         const following = document.createElement('div');
           following.id = "following";
           following.style.display = "block";
-          following.innerHTML  =  `<i></i> ${visitedProfile[0].following}`;
+          following.innerHTML  =  `${visitedProfile[0].following}`;
           document.querySelector("#profile").appendChild(following);
 
           const followers = document.createElement('div');
@@ -193,9 +187,12 @@ function load_profile(id) {
 
     // Checks if the request user and the visited profile user are the same to display or not the follow button    
     if (requestUser.username !== visitedProfile[0].username) {
-      btn.style.display = "block"
+      document.querySelector("#btn_follow").style.display = "block";
+
+      const visited_user = visitedProfile[0].username;
+      document.querySelector("#user_followed").setAttribute("value", visited_user )
     } else {
-      btn.style.display = "none";     
+      document.querySelector("#btn_follow").style.display = "none";     
     }
 
    
@@ -247,39 +244,51 @@ function load_profile(id) {
             post_grid.appendChild(likes);
 
     }
-     
+    
+    /*
     document.querySelector("#btn_follow").addEventListener('click', () => {
-      followuser(visitedProfile[0].username);
+      var x = document.querySelector("#btn_follow"); 
+      if (x.hasAttribute("value")) {
+        x.setAttribute("value", "Unfollow");      
+      } else {
+        x.setAttribute("value", "Folow");
+      }
     });
-
+    */
+    
   })
   
  
   
 }
 
+/*
+function followuser() { 
 
-function followuser(username) { 
+  const user = document.querySelector("#uservisited").value;
 
-   
-  fetch(`/followuser/${username}`, {
+  console.log(user);
 
-    method:"POST",
-    body: JSON.stringify({
-      username: username,
+  document.querySelector("#follow_form").onsubmit = () => { 
+    fetch('/followuser ', {
+
+      method:"POST",
+      body: JSON.stringify({
+        username: user,
+      })
+    
     })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Success:", data);
   
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("Success:", data);
- 
-  })
-  .catch((error) => {
-    console.error('Error:', error);
-  });
-  
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  }
 
 
 
 }
+*/

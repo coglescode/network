@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from django.contrib.auth import get_user_model
+
 
 
 class User(AbstractUser):
@@ -11,20 +13,33 @@ class User(AbstractUser):
 
 
 
+class Follow(models.Model):
+    user_from = models.ForeignKey( settings.AUTH_USER_MODEL, related_name="rel_from_set", on_delete=models.CASCADE, )
+    user_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="rel_to_set", on_delete=models.CASCADE, )
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ("-created", )
+
+
 class Profile(models.Model):
-    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
+    #username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
+    username = models.CharField(max_length=200, blank=True, )
+    
     following = models.PositiveIntegerField(default=0)
     followers = models.PositiveIntegerField(default=0)
-    user_folllows = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="followers", blank=True)
+    #user_follows = models.ManyToManyField("self", through=Follow, related_name="following_users", symmetrical=False, blank=True)
+    #user_follows = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="following_users", blank=True)
+    
     exist = models.BooleanField(default=True)
     
 
-    def serialize(self):
+    def serialize(self): 
         return {
             "id":self.id,
-            "username": self.username.username,    
+            "username": self.username,    
             "following": self.following,
-            "followers": self.followers, 
+            "followers": self.followers,             
             "exist": self.exist   
         }    
         
@@ -41,7 +56,7 @@ class Post(models.Model):
     poster = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts")
     body = models.TextField(blank=True)    
     likes = models.PositiveIntegerField(default=0)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
     
@@ -61,6 +76,13 @@ class Post(models.Model):
 
     class Meta:
         ordering = ('-created',)
+
+
+#Add following field to the User model dynamically
+user_model = get_user_model()
+user_model.add_to_class("following", models.ManyToManyField("self", through=Follow,
+ related_name="following_users", symmetrical=False)
+)
 
 
 """
