@@ -1,0 +1,64 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+      <div class="container">
+        <div class="d-flex justify-content-center justify-content-lg-start">
+            <div class="h1 py-4 "id="section_label">  Following posts </div>              
+          </div>
+     
+        {% for post in posts %}            
+
+            <div id="posts" style="display: block; ">                
+                <div id="{{ post.id }}" class="post_grid shadow p-3 mb-5 bg-body rounded">
+                    <a id="{{ post.user }}" href="{% url 'getuser' post.user %}" class="user section" disabled>{{post.user }}</a>
+                    <div id="{{ post.created }}" class="timestamp">{{post.created}}</div>
+                    <div id="{{ post.id }}" class="content " disabled>{{post.body}}</div>
+                    <div class="likes_div">
+                        {% with total_likes=post.users_like.count users_like=post.users_like.all %}                            
+                            <a id="link_{{ post.id }}"  data-id="{{ post.id }}"
+                            data-action="{% if request.user in users_like %}un{% endif %}like" 
+                            class="like like_icon ">                            
+                            {% if request.user not in users_like %}
+                                <i id="icon_{{ post.id }}" class="bi bi-star"></i>
+                            {% else %}                                        
+                                <i id="icon_{{ post.id }}" class="bi bi-star-fill"></i>
+                            {% endif %}                                        
+                            </a>  
+                          
+                            <span class="total_{{ post.id }}">{{ total_likes }} </span>
+                               
+                        {% endwith %}                                        
+                    </div>
+                </div>   
+            </div>
+        {% endfor %}
+
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+                {% if posts.has_previous %}                        
+                    <li class="page-item"><a class="page-link" href="?page=1">&laquo; first</a></li>
+                    <li id="previous" class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a></li>
+                {% endif %} 
+
+                {% for page in pages %}
+                    {% if request.GET.page|add:"0" == page %}
+                        <li id="page_{{ forloop.counter }}" class="page-item active" data-page="{{ forloop.counter }}"><a class="page-link" href="?page={{ forloop.counter }}">{{ forloop.counter }}</a></li>
+                    {% else %}
+                        <li id="page_{{ forloop.counter }}" data-page="{{ forloop.counter }}"><a class="page-link" href="?page={{ forloop.counter }}">{{ forloop.counter }}</a></li>
+
+                    {% endif %}
+                {% endfor %}
+            
+                {% if posts.has_next %}
+                    <li id="next" class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ posts.paginator.num_pages }}">last &raquo;</a></li>
+                {% endif %}                  
+            </ul >
+        </na>     
+      </div>        
+
+      {% endif %}
+{% endblock %}
+

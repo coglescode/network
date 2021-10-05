@@ -13,41 +13,62 @@
 }
 
 
+
 .post_grid {
   display: grid; 
-  grid-template-columns: 100px 200px;
-  grid-auto-rows: auto;
-  margin:10px 0;
+  grid-template-columns: repeat(7, 10px);
+  grid-template-rows: auto;
+  margin:50px 0;
   gap: 5px 5px;
-  grid-template:   
-  "profile  user timestamp "
-  "profile body  body"
-  "profile likes  likes";
+  grid-template: 
+  " timestamp timestamp timestamp timestamp timestamp timestamp timestamp"  
+  " user user user user user user user "  
+  " body body body body body body body "
+  " likes_icon likes_number . . . . . "
+  " edit edit edit edit edit edit edit";
+  animation: slidedown 5s linear 2s 1 forwards forwards;
+  animation-play-state: paused;
 }
 
-.profile {
-  grid-area: profile;    
-  background-color:blue;  
-  padding: 10px;  
-  color: aliceblue;
-  justify-items: center;
+@keyframes slidedown {
+  0% {
+    
+      height: 100%;
+      line-height: 100%;
+      padding: 20px;
+      margin-bottom: 10px;
+  }
+  75% {
+    
+      height: 100%;
+      line-height: 100%;
+      padding: 20px;
+      margin-bottom: 10px;
+  }
+  100% {
+     
+      height: 0px;
+      line-height: 0px;
+      padding: 0px;
+      margin-bottom: 0px;
+  }
 }
+
+
 
 .user{
   grid-area: user;   
   color: blue;
-  display: flex;
+  display: block;
   flex-flow: row;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-
-  
+  align-items: center; 
 }
+
 
 .timestamp {
   grid-area: timestamp;   
-  padding: 10px;
+
       
 }
 
@@ -55,16 +76,30 @@
 .content {
   grid-area: body; 
   background-color:yellow;
-  padding: 10px;
+ 
       
 }
 
-.likes {
-  grid-area: likes; 
-  background-color: red;
-  font-size: 20px;
-  height: 20px;
+.edit{
+  grid-area: edit;
 }
+
+
+.likes_number {
+  grid-area: likes_number; 
+  font-size: 20px;
+ 
+}
+
+
+.like_icon {
+  grid-area: likes_icon; 
+  font-size: 20px;
+  color: blue;
+ 
+}
+
+
 
 
 
@@ -72,4 +107,12 @@
 #profile,
 #following {
   display: none;
+}
+
+#follow, #unfollow, #edit {
+  text-decoration: none;
+}
+
+.user, .timestamp, .content, .likes_link, .likes_icon, .edit{
+  padding: 5px;
 }

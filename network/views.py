@@ -1,143 +1,227 @@
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.forms import fields
-from django.http import HttpResponse, HttpResponseRedirect, request
+from django.http import HttpResponseRedirect, request
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
-from django.utils import tree 
+from django.urls import reverse 
 
-from .models import Profile, User, Post, Follow
-
+from .models import User, Post, Profile, Follow, LikedPost
 
 from django import forms
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-#from common.decorators import ajax_required
+from django.db.models import Count
+from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
-class PostForm(forms.ModelForm): 
+
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('body',)
         widgets = {
-            'body':forms.Textarea(attrs={'rows':1})
+            'body':forms.Textarea(attrs={'rows':'1', 'placeholder':'Speak your mind'})
         }
         labels = {
-            'body': 'New Post', 
+            'body': '', 
         }
     
     def __init__(self, *args, **kwargs):
         super(PostForm, self).__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs['class'] = 'form-control form_div'
 
 
 
+#Creates and save new posts
 @login_required
 def compose_post(request):
     if request.method == "POST":
         post_form = PostForm(request.POST)  
         if post_form.is_valid():
             new_post = post_form.save(commit=False)
-            
-            new_post.poster = request.user          
-            new_post.save()       
-       
-            if new_post.poster.is_authenticated:
-                obj, created = Profile.objects.get_or_create(
-                    username=request.user,                    
-                    defaults={'exist':True}
-                    )  
-                  
+            new_post.user = request.user          
+            new_post.save()
     else:
         post_form: PostForm() 
     return HttpResponseRedirect(reverse ('index'))
-    #return render(request, "network/index.html",)
 
 
-   
-    # Returns the entire API. But am unable to reach the keys and its values at the moment
-    """
-    def get_posts(request, section):
-        allposts = list(Post.objects.values())
-        return JsonResponse(allposts, safe=False)
-    """
+
+#Edit posts view
+@csrf_exempt 
+@login_required
+def editpost(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Most be method POST"})
+
+    # Check posts
+    data = json.loads(request.body)
+    post = data.get("post", "")   
+    postid = request.GET.get("id") 
+
+    try:    
+        posts = Post.objects.get(id=postid)
+        if posts:
+            Post.objects.filter(id=postid, user=request.user).update(body=post)      
+    except Post.DoesNotExist:
+        return JsonResponse({"error":"Post not found"}, status=404)
+    return JsonResponse({"message": "Post successfully updated."}, status=201)
 
 
-def get_posts(request, section):
-    if section == "allposts":
-        posts = Post.objects.filter(active=True)
-        return JsonResponse([post.serialize() for post in posts], safe=False)
-   
-    else:
-        #posts = posts.order_by("-created").all()
-        return JsonResponse({"error":"No post yet"}, status=404)
-  
- 
+
+#Save liked posts in a m2m in Post model
+@require_POST
+@csrf_exempt
+@login_required
+def likepost(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method POST   is required"}, status=400)
+    
+    data = json.loads(request.body)    
+      
+    post_id = data.get("post_id", "")
+    action = data.get("action", "") 
+
+    if post_id and action:           
+        try:
+            post = Post.objects.get(id=post_id)
+            if action == "like":
+                post.users_like.add(request.user)
+            else:
+                post.users_like.remove(request.user)
+            return JsonResponse({"status":"ok"})          
+        except:
+            pass           
+    return JsonResponse({"status":"error"})
+
+
 
 @login_required
-def getuser(request, id):       
+def getuser(request, username):  
+    user = get_object_or_404(User, username=username)
+    page_number = request.GET.get("page")
 
-    # Query for requested user profile and its posts
-    try:      
-        post_id = get_object_or_404(Post, id=id)
-        posts = Post.objects.filter(poster=post_id.poster, active=True).all() 
-        user = Profile.objects.filter(username=post_id.poster, exist=True)
-        currentUser = Profile.objects.filter(username=request.user) 
-        userdata = [*user, *posts, *currentUser ]
+    try:
+        posts = Post.objects.filter(user=user, active=True)
+        userprofile = Profile.objects.filter(user=user, exist=True)        
         
+        paginator = Paginator(posts, 10) # Show 10 posts per page 
+        page_obj = paginator.get_page(page_number)  
+
     except Profile.DoesNotExist:
         return JsonResponse({"error": "User not found."}, status=404)
+        
+    return render(request, "network/profile.html", {
+        "profiles": userprofile,
+        "posts": page_obj,
+        "user": user,
+        "page_number": page_number,
+        "pages": page_obj.paginator.page_range       
+    })
 
-    # Return requested user profile and its posts
-    if request.method == "GET":
-        return JsonResponse([user.serialize() for user in userdata], safe=False)
 
-#@ajax_required
-#@csrf_exempt
-#require_POST
+
+@csrf_exempt
+@login_required
 def followuser(request):
-
-    if request.method == "POST":
-        #return JsonResponse({"error": "User not found."}, status=404)
-        
-        action = request.POST["action"]
-        user_followed = request.POST["followed"]
-        #user_follower = request.POST["follower"]
-        
-        
-        
-        if user_followed:            
-
-                #followed = Profile.objects.get(username=user_followed)
-
-                followed = User.objects.get(username=user_followed)
-                if action:
-                    
-                    #followed.user_follows.create(request.user)
-                    
-                    
-                    p = Follow.objects.create(user_from=request.user, user_to=followed)
-                    p.save()
-                
-                    return JsonResponse({"status":"ok"})
-        
-            #return JsonResponse({"status": "error"})
-
-    return JsonResponse({"status": "error"})
-
+    if request.method != "POST":
+        return JsonResponse({"error": "Method GET is required"}, status=400)
     
+    data = json.loads(request.body)    
+ 
+    user = data.get("user", "")
+    action = data.get("action", "") 
+
+    if user and action:           
+        try:
+            user = User.objects.get(username=user)
+            
+            if action == "follow":
+                Follow.objects.get_or_create(user_from=request.user, user_to=user)
+            else:
+                Follow.objects.filter(user_from=request.user, user_to=user).delete()                
+            return JsonResponse({"status":"ok"})               
+        except User.DoesNotExist:
+            return JsonResponse({"status":"error"})
+    return JsonResponse({"status":"error"})
+
+
+
+#Save the counter for followings and followers
+@csrf_exempt
+@login_required
+def savecounter(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method POST is required."}, status=400)
+
+    data = json.loads(request.body)
+
+    user = request.GET.get("user")
+    follower_count = data.get("follower_count", "") 
+    try: 
+        user0 = get_object_or_404(User, username=request.user)
+        total_following = user0.following.count()
+        
+        followed = User.objects.get(username=user)
+
+        if user:             
+            Profile.objects.filter(user=followed).update(follower=follower_count)
+
+            Profile.objects.filter(user=request.user).update(following=total_following)
+        else:
+            Profile.objects.filter(user=followed, follower=follower_count).delete()
+
+            Profile.objects.filter(user=request.user, following=total_following).delete()
+            
+    except Profile.DoesNotExist:
+        return JsonResponse({"error":"Profile not found"})   
+    return JsonResponse({"status":"ok"})   
+
+
+
+#Brings followers posts to following page
+@login_required
+def followed_posts_list(request):
     
+    followed_user = Follow.objects.filter(user_from=request.user).values_list("user_to")
+    
+    posts = Post.objects.filter(user__in=followed_user)
+    paginator = Paginator(posts, 5)
+    page_number = request.GET.get("page")
+
+    try:
+        page_obj = paginator.page(page_number)        
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:        
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(request, "network/following.html", {
+        "posts": page_obj,         
+        "page_number": page_number,   
+        "pages": page_obj.paginator.page_range 
+    })
+
+
 
 
 def index(request):
+    allposts = Post.objects.all()
+    paginator = Paginator(allposts, 10)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "network/index.html", {
-            "form": PostForm(),
-        })
+        "form": PostForm(),
+        "posts": page_obj,         
+        "pages": page_obj.paginator.page_range      
+    })
 
 
 def login_view(request):
@@ -147,8 +231,6 @@ def login_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
-
-
 
         # Check if authentication successful
         if user is not None:
@@ -184,6 +266,10 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
+
+            rigestered = User.objects.get(username=username)
+            perfil = Profile.objects.create(user=rigestered)
+            perfil.save()
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."
